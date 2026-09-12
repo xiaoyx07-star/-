@@ -1,0 +1,449 @@
+/* ==================================================
+   写真追加・Supabase検証版
+   ================================================== */
+
+async function addPhotos(fileList){
+
+  if(!fileList || !fileList.length){
+    return;
+  }
+
+  if(!state.currentSite){
+    alert("現場を開いてから写真を追加してください。");
+    return;
+  }
+
+  /* FileListを普通の配列にコピー */
+  var files = Array.from(fileList);
+
+  /* 画像だけにする */
+  files = files.filter(function(file){
+    return file &&
+           file.type &&
+           file.type.startsWith("image/");
+  });
+
+  if(!files.length){
+    alert("画像ファイルがありません。");
+    return;
+  }
+
+  state.savingPhoto = true;
+  state.error = null;
+  render();
+
+  var uploadedPaths = [];
+
+  try{
+
+    /* Firebase */
+    await waitForFirebase();
+
+    /* Supabase */
+    await waitForSupabase();
+
+    if(!supabase){
+      throw new Error(
+        "Supabaseクライアントが取得できませんでした"
+      );
+    }
+
+    var db =
+      window.firebaseDB;
+
+    var f =
+      window.firebaseFns;
+
+    var siteId =
+      state.currentId;
+
+    var newPhotos =
+      (
+        state.currentSite.photos || []
+      ).slice();
+
+    console.log(
+      "========== 写真アップロード開始 =========="
+    );
+
+    console.log(
+      "Supabase URL:",
+      "https://vbfrjszlcshcudhgahvh.supabase.co"
+    );
+
+    console.log(
+      "Bucket:",
+      "photos"
+    );
+
+    console.log(
+      "現場ID:",
+      siteId
+    );
+
+    console.log(
+      "写真枚数:",
+      files.length
+    );
+
+
+    /* ==========================================
+       写真を1枚ずつ処理
+       ========================================== */
+
+    for(var i=0; i<files.length; i++){
+
+      var file =
+        files[i];
+
+      console.log(
+        "処理中:",
+        file.name,
+        file.type,
+        file.size
+      );
+
+
+      /* ------------------------------------------
+         画像圧縮
+         ------------------------------------------ */
+
+      var blob =
+        await compressImageBlob(file);
+
+      console.log(
+        "圧縮後サイズ:",
+        blob.size
+      );
+
+
+      /* ------------------------------------------
+         ID
+         ------------------------------------------ */
+
+      var photoId =
+        uid();
+
+
+      /* ------------------------------------------
+         保存パス
+         ------------------------------------------ */
+
+      var path =
+        "sites/" +
+        siteId +
+        "/" +
+        photoId +
+        ".jpg";
+
+
+      console.log(
+        "アップロード先:",
+        path
+      );
+
+
+      /* ------------------------------------------
+         Supabase Storageへアップロード
+         ------------------------------------------ */
+
+      var uploadResult =
+        await supabase
+          .storage
+          .from("photos")
+          .upload(
+            path,
+            blob,
+            {
+              contentType:"image/jpeg",
+              cacheControl:"3600",
+              upsert:false
+            }
+          );
+
+
+      console.log(
+        "uploadResult:",
+        uploadResult
+      );
+
+
+      if(uploadResult.error){
+
+        throw new Error(
+          "Supabaseアップロードエラー: " +
+          (
+            uploadResult.error.message ||
+            JSON.stringify(uploadResult.error)
+          )
+        );
+
+      }
+
+
+      uploadedPaths.push(path);
+
+
+      console.log(
+        "Supabaseアップロード成功:",
+        path
+      );
+
+
+      /* ------------------------------------------
+         公開URL取得
+         ------------------------------------------ */
+
+      var publicResult =
+        supabase
+          .storage
+          .from("photos")
+          .getPublicUrl(path);
+
+
+      console.log(
+        "publicResult:",
+        publicResult
+      );
+
+
+      if(
+        !publicResult ||
+        !publicResult.data ||
+        !publicResult.data.publicUrl
+      ){
+
+        throw new Error(
+          "Supabaseの公開URLを取得できませんでした"
+        );
+
+      }
+
+
+      var photoUrl =
+        publicResult.data.publicUrl;
+
+
+      console.log(
+        "公開URL:",
+        photoUrl
+      );
+
+
+      /* ------------------------------------------
+         公開URLを実際に確認
+         ------------------------------------------ */
+
+      try{
+
+        var checkResponse =
+          await fetch(
+            photoUrl,
+            {
+              method:"HEAD",
+              cache:"no-store"
+            }
+          );
+
+
+        console.log(
+          "公開URL確認:",
+          checkResponse.status,
+          checkResponse.ok
+        );
+
+
+        if(!checkResponse.ok){
+
+          console.warn(
+            "公開URLへのアクセス確認失敗:",
+            checkResponse.status
+          );
+
+        }
+
+      }catch(checkError){
+
+        console.warn(
+          "公開URL確認エラー:",
+          checkError
+        );
+
+      }
+
+
+      /* ------------------------------------------
+         Firestore用データ
+         ------------------------------------------ */
+
+      newPhotos.push({
+
+        id:photoId,
+
+        url:photoUrl,
+
+        path:path,
+
+        addedAt:Date.now()
+
+      });
+
+
+      console.log(
+        "Firestore用写真データ作成:",
+        newPhotos[newPhotos.length - 1]
+      );
+
+    }
+
+
+    /* ==========================================
+       Firestoreへ保存
+       ========================================== */
+
+    console.log(
+      "Firestoreへ写真情報を保存します"
+    );
+
+
+    var ref =
+      f.doc(
+        db,
+        "sites",
+        siteId
+      );
+
+
+    await f.updateDoc(
+      ref,
+      {
+        photos:newPhotos
+      }
+    );
+
+
+    console.log(
+      "Firestore保存成功"
+    );
+
+
+    /* ==========================================
+       画面状態を更新
+       ========================================== */
+
+    var updated =
+      Object.assign(
+        {},
+        state.currentSite,
+        {
+          photos:newPhotos
+        }
+      );
+
+
+    state.currentSite =
+      updated;
+
+
+    siteCache[siteId] =
+      updated;
+
+
+    state.savingPhoto =
+      false;
+
+
+    state.error =
+      null;
+
+
+    render();
+
+
+    /* ==========================================
+       成功表示
+       ========================================== */
+
+    showToast(
+      files.length +
+      "枚の写真を追加しました"
+    );
+
+
+    console.log(
+      "========== 写真アップロード完了 =========="
+    );
+
+
+  }catch(e){
+
+    console.error(
+      "========== 写真保存エラー =========="
+    );
+
+    console.error(e);
+
+    console.error(
+      "エラー内容:",
+      e.message
+    );
+
+
+    /* ------------------------------------------
+       途中までアップロードした写真を削除
+       ------------------------------------------ */
+
+    if(uploadedPaths.length){
+
+      try{
+
+        var cleanupResult =
+          await supabase
+            .storage
+            .from("photos")
+            .remove(
+              uploadedPaths
+            );
+
+
+        console.log(
+          "途中アップロード削除:",
+          cleanupResult
+        );
+
+      }catch(cleanupError){
+
+        console.error(
+          "途中ファイル削除エラー:",
+          cleanupError
+        );
+
+      }
+
+    }
+
+
+    state.savingPhoto =
+      false;
+
+
+    /*
+      実際のエラーを画面に表示
+    */
+
+    var message =
+      e && e.message
+        ? e.message
+        : String(e);
+
+
+    state.error =
+      "写真の保存に失敗しました。\n" +
+      message;
+
+
+    render();
+
+  }
+
+}
