@@ -1,0 +1,4628 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+>
+
+<title>ニシオ現場写真台帳</title>
+
+
+<!-- =========================
+     Firebase + Supabase
+     ========================= -->
+
+<script type="module">
+
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+
+import {
+  getFirestore,
+  collection,
+  doc,
+  getDocs,
+  getDoc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  orderBy
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+import {
+  createClient
+} from "https://esm.sh/@supabase/supabase-js@2";
+
+
+/* =========================
+   Firebase
+   ========================= */
+
+const firebaseConfig = {
+
+  apiKey:
+    "AIzaSyBuSIynRkVhBeifDQ2e7kbh4kp_r3DvOIM",
+
+  authDomain:
+    "nisio-d895f.firebaseapp.com",
+
+  projectId:
+    "nisio-d895f",
+
+  storageBucket:
+    "nisio-d895f.firebasestorage.app",
+
+  messagingSenderId:
+    "1028891689412",
+
+  appId:
+    "1:1028891689412:web:ce358d0949ba810a042491",
+
+  measurementId:
+    "G-47WFHEZNMP"
+
+};
+
+
+const firebaseApp =
+  initializeApp(firebaseConfig);
+
+
+const db =
+  getFirestore(firebaseApp);
+
+
+/* =========================
+   Supabase
+   写真保存専用
+   ========================= */
+
+const SUPABASE_URL =
+  "https://vbfrjszlcshcudhgahvh.supabase.co";
+
+
+const SUPABASE_ANON_KEY =
+  "sb_publishable_6Q0M8jFTdSu9kLeqKMeO6w_-ACkDUAJ";
+
+
+const supabase =
+  createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+
+/*
+  通常のscript側から
+  Supabaseを使えるようにする
+*/
+
+window.firebaseDB =
+  db;
+
+
+window.firebaseFns = {
+
+  collection,
+  doc,
+  getDocs,
+  getDoc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  orderBy
+
+};
+
+
+window.supabaseClient =
+  supabase;
+
+
+/*
+  FirebaseとSupabaseの準備完了
+*/
+
+window.dispatchEvent(
+  new Event("firebase-ready")
+);
+
+window.dispatchEvent(
+  new Event("supabase-ready")
+);
+
+</script>
+
+
+<link
+  rel="preconnect"
+  href="https://fonts.googleapis.com"
+>
+
+<link
+  rel="preconnect"
+  href="https://fonts.gstatic.com"
+>
+
+
+<link
+  href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
+  rel="stylesheet"
+>
+
+
+<style>
+
+/* =========================
+   基本
+   ========================= */
+
+:root{
+
+  --bg:#14161A;
+
+  --panel:#1E2126;
+
+  --panel-alt:#262A31;
+
+  --border:#33383F;
+
+  --yellow:#F0B429;
+
+  --yellow-dark:#C6900E;
+
+  --steel:#6E8FA8;
+
+  --text:#ECEAE4;
+
+  --muted:#9AA0A8;
+
+  --danger:#C1533D;
+
+  --radius:3px;
+
+}
+
+
+*{
+  box-sizing:border-box;
+}
+
+
+html,
+body{
+
+  margin:0;
+
+  padding:0;
+
+}
+
+
+body{
+
+  background:var(--bg);
+
+  color:var(--text);
+
+  font-family:'Inter',sans-serif;
+
+  -webkit-font-smoothing:antialiased;
+
+  min-height:100vh;
+
+}
+
+
+h1,
+h2,
+h3,
+.display{
+
+  font-family:'Oswald',sans-serif;
+
+  font-weight:600;
+
+  letter-spacing:.01em;
+
+  margin:0;
+
+}
+
+
+button,
+input{
+
+  font-family:'Inter',sans-serif;
+
+}
+
+
+#app{
+
+  max-width:480px;
+
+  margin:0 auto;
+
+  min-height:100vh;
+
+  background:var(--bg);
+
+  position:relative;
+
+  padding-bottom:96px;
+
+}
+
+
+/* =========================
+   ヘッダー
+   ========================= */
+
+header.top{
+
+  position:sticky;
+
+  top:0;
+
+  z-index:20;
+
+  background:var(--bg);
+
+}
+
+
+.top-inner{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:10px;
+
+  padding:18px 18px 14px;
+
+}
+
+
+.top-inner svg{
+
+  flex-shrink:0;
+
+}
+
+
+.top-inner h1{
+
+  font-size:21px;
+
+  color:var(--text);
+
+}
+
+
+.top-inner .sub{
+
+  font-size:12px;
+
+  color:var(--muted);
+
+  margin-top:2px;
+
+}
+
+
+.hazard-bar{
+
+  height:5px;
+
+  background:
+
+    repeating-linear-gradient(
+
+      45deg,
+
+      var(--yellow) 0 10px,
+
+      #1a1a1a 10px 20px
+
+    );
+
+}
+
+
+main{
+
+  padding:16px;
+
+}
+
+
+/* =========================
+   エラー
+   ========================= */
+
+.banner{
+
+  background:#3A2420;
+
+  border:1px solid var(--danger);
+
+  color:#F0C7BE;
+
+  padding:10px 12px;
+
+  border-radius:var(--radius);
+
+  font-size:13px;
+
+  margin-bottom:12px;
+
+  display:flex;
+
+  justify-content:space-between;
+
+  gap:10px;
+
+  align-items:center;
+
+}
+
+
+.banner button{
+
+  background:none;
+
+  border:none;
+
+  color:#F0C7BE;
+
+  font-size:13px;
+
+  cursor:pointer;
+
+  text-decoration:underline;
+
+}
+
+
+/* =========================
+   一覧
+   ========================= */
+
+.empty-state{
+
+  text-align:center;
+
+  padding:64px 20px;
+
+  color:var(--muted);
+
+}
+
+
+.empty-state p{
+
+  font-size:14px;
+
+  line-height:1.7;
+
+  margin:0;
+
+}
+
+
+.site-card{
+
+  background:var(--panel-alt);
+
+  border-left:4px solid var(--yellow);
+
+  border-radius:var(--radius);
+
+  padding:14px 16px;
+
+  margin-bottom:10px;
+
+  cursor:pointer;
+
+}
+
+
+.site-card:active{
+
+  background:#2E333B;
+
+}
+
+
+.site-card .name{
+
+  font-size:17px;
+
+  color:var(--text);
+
+}
+
+
+.site-card .addr{
+
+  font-size:13px;
+
+  color:var(--muted);
+
+  margin-top:4px;
+
+}
+
+
+.site-card .meta{
+
+  font-size:11px;
+
+  color:#6E7480;
+
+  margin-top:8px;
+
+}
+
+
+/* =========================
+   ＋ボタン
+   ========================= */
+
+.fab{
+
+  position:fixed;
+
+  right:20px;
+
+  bottom:22px;
+
+  width:56px;
+
+  height:56px;
+
+  background:var(--yellow);
+
+  color:#14161A;
+
+  border:none;
+
+  border-radius:8px;
+
+  font-size:28px;
+
+  line-height:56px;
+
+  text-align:center;
+
+  box-shadow:4px 4px 0 rgba(0,0,0,.55);
+
+  cursor:pointer;
+
+  z-index:30;
+
+}
+
+
+/* =========================
+   戻る
+   ========================= */
+
+.back-row{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:10px;
+
+  margin-bottom:16px;
+
+}
+
+
+.back-btn{
+
+  background:var(--panel-alt);
+
+  border:1px solid var(--border);
+
+  color:var(--text);
+
+  font-size:14px;
+
+  font-weight:600;
+
+  cursor:pointer;
+
+  display:flex;
+
+  align-items:center;
+
+  gap:8px;
+
+  padding:10px 16px 10px 12px;
+
+  border-radius:var(--radius);
+
+}
+
+
+/* =========================
+   詳細
+   ========================= */
+
+.detail-title{
+
+  font-size:22px;
+
+  margin-bottom:8px;
+
+}
+
+
+.info-row{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:8px;
+
+  color:var(--muted);
+
+  font-size:13px;
+
+  margin-bottom:6px;
+
+}
+
+
+.info-row .label{
+
+  color:#6E7480;
+
+  flex-shrink:0;
+
+}
+
+
+.info-row-last{
+
+  margin-bottom:16px;
+
+}
+
+
+.edit-link{
+
+  background:none;
+
+  border:none;
+
+  color:var(--steel);
+
+  font-size:12px;
+
+  cursor:pointer;
+
+  text-decoration:underline;
+
+  padding:0;
+
+  margin-left:auto;
+
+}
+
+
+/* =========================
+   Googleマップ
+   ========================= */
+
+.map-frame{
+
+  width:100%;
+
+  min-height:130px;
+
+  border:1px solid var(--border);
+
+  border-radius:var(--radius);
+
+  overflow:hidden;
+
+  background:var(--panel);
+
+  margin-bottom:22px;
+
+}
+
+
+.map-placeholder{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  min-height:130px;
+
+  color:var(--muted);
+
+  font-size:13px;
+
+  text-align:center;
+
+  padding:20px;
+
+}
+
+
+.map-button{
+
+  display:inline-block;
+
+  background:var(--yellow);
+
+  color:#14161A;
+
+  padding:12px 20px;
+
+  border-radius:var(--radius);
+
+  text-decoration:none;
+
+  font-weight:600;
+
+  font-size:14px;
+
+}
+
+
+/* =========================
+   セクション
+   ========================= */
+
+.section-head{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:baseline;
+
+  margin-bottom:10px;
+
+}
+
+
+.section-head h2{
+
+  font-size:16px;
+
+  color:var(--text);
+
+}
+
+
+.section-head .count{
+
+  font-size:12px;
+
+  color:var(--muted);
+
+}
+
+
+/* =========================
+   コメント
+   ========================= */
+
+.comment-form{
+
+  display:flex;
+
+  gap:8px;
+
+  margin-bottom:14px;
+
+}
+
+
+.comment-form input{
+
+  flex:1;
+
+  background:var(--panel-alt);
+
+  border:1px solid var(--border);
+
+  color:var(--text);
+
+  padding:10px 12px;
+
+  border-radius:var(--radius);
+
+  font-size:14px;
+
+}
+
+
+.comment-form button{
+
+  background:var(--yellow);
+
+  border:1px solid var(--yellow);
+
+  color:#14161A;
+
+  font-weight:600;
+
+  font-size:13px;
+
+  padding:0 16px;
+
+  border-radius:var(--radius);
+
+}
+
+
+.comment-list{
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:8px;
+
+  margin-bottom:24px;
+
+}
+
+
+.comment-item{
+
+  background:var(--panel);
+
+  border:1px solid var(--border);
+
+  border-left:3px solid var(--steel);
+
+  border-radius:var(--radius);
+
+  padding:10px 12px;
+
+  display:flex;
+
+  justify-content:space-between;
+
+  gap:10px;
+
+}
+
+
+.comment-item .body{
+
+  flex:1;
+
+}
+
+
+.comment-item .time{
+
+  font-size:11px;
+
+  color:var(--muted);
+
+  margin-bottom:3px;
+
+}
+
+
+.comment-item .text{
+
+  font-size:14px;
+
+  line-height:1.5;
+
+  white-space:pre-wrap;
+
+  word-break:break-word;
+
+}
+
+
+.del-c{
+
+  background:none;
+
+  border:none;
+
+  color:#6E7480;
+
+  font-size:12px;
+
+  cursor:pointer;
+
+}
+
+
+/* =========================
+   写真
+   ========================= */
+
+.photo-grid{
+
+  display:grid;
+
+  grid-template-columns:repeat(3,1fr);
+
+  gap:6px;
+
+}
+
+
+.photo-tile{
+
+  position:relative;
+
+  aspect-ratio:1/1;
+
+  border:1px solid var(--border);
+
+  border-radius:var(--radius);
+
+  overflow:hidden;
+
+  background:var(--panel);
+
+  cursor:pointer;
+
+}
+
+
+.photo-tile img{
+
+  width:100%;
+
+  height:100%;
+
+  object-fit:cover;
+
+  display:block;
+
+}
+
+
+.photo-add-box{
+
+  position:relative;
+
+  aspect-ratio:1/1;
+
+  border:1px dashed var(--border);
+
+  border-radius:var(--radius);
+
+  background:var(--panel);
+
+  display:flex;
+
+  flex-direction:column;
+
+  justify-content:center;
+
+  align-items:center;
+
+  gap:8px;
+
+  text-align:center;
+
+}
+
+
+.photo-add-box .plus{
+
+  font-size:25px;
+
+  color:var(--yellow);
+
+}
+
+
+.photo-add-button{
+
+  width:90%;
+
+  padding:8px 4px;
+
+  border:1px solid var(--border);
+
+  border-radius:3px;
+
+  background:var(--panel-alt);
+
+  color:var(--text);
+
+  font-size:11px;
+
+  cursor:pointer;
+
+}
+
+
+.photo-add-button.camera{
+
+  background:var(--yellow);
+
+  color:#14161A;
+
+  border-color:var(--yellow);
+
+}
+
+
+.photo-add-button:disabled{
+
+  opacity:.5;
+
+}
+
+
+input[type=file]{
+
+  display:none;
+
+}
+
+
+/* =========================
+   モーダル
+   ========================= */
+
+.overlay{
+
+  position:fixed;
+
+  inset:0;
+
+  background:rgba(10,11,13,.72);
+
+  display:flex;
+
+  align-items:flex-end;
+
+  justify-content:center;
+
+  z-index:50;
+
+}
+
+
+.modal{
+
+  background:var(--panel);
+
+  border-top:1px solid var(--border);
+
+  border-radius:3px 3px 0 0;
+
+  width:100%;
+
+  max-width:480px;
+
+  padding:22px 20px 26px;
+
+}
+
+
+.modal h2{
+
+  font-size:18px;
+
+  margin-bottom:16px;
+
+}
+
+
+.field{
+
+  margin-bottom:14px;
+
+}
+
+
+.field label{
+
+  display:block;
+
+  font-size:12px;
+
+  color:var(--muted);
+
+  margin-bottom:6px;
+
+}
+
+
+.field input{
+
+  width:100%;
+
+  background:var(--panel-alt);
+
+  border:1px solid var(--border);
+
+  color:var(--text);
+
+  padding:11px 12px;
+
+  border-radius:var(--radius);
+
+  font-size:15px;
+
+}
+
+
+.modal-actions{
+
+  display:flex;
+
+  gap:10px;
+
+  margin-top:18px;
+
+}
+
+
+.btn{
+
+  flex:1;
+
+  padding:12px;
+
+  border-radius:var(--radius);
+
+  border:1px solid var(--border);
+
+  font-size:14px;
+
+  font-weight:600;
+
+  cursor:pointer;
+
+}
+
+
+.btn-primary{
+
+  background:var(--yellow);
+
+  border-color:var(--yellow);
+
+  color:#14161A;
+
+}
+
+
+.btn-secondary{
+
+  background:none;
+
+  color:var(--muted);
+
+}
+
+
+/* =========================
+   ライトボックス
+   ========================= */
+
+.lightbox{
+
+  position:fixed;
+
+  inset:0;
+
+  background:#000;
+
+  display:flex;
+
+  flex-direction:column;
+
+  z-index:60;
+
+}
+
+
+.lightbox-top{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+
+  padding:14px 16px;
+
+}
+
+
+.lightbox-top button{
+
+  background:none;
+
+  border:none;
+
+  color:var(--text);
+
+  font-size:14px;
+
+  cursor:pointer;
+
+}
+
+
+.lightbox-top .del{
+
+  color:#E8897A;
+
+}
+
+
+.lightbox-img{
+
+  flex:1;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  overflow:hidden;
+
+}
+
+
+.lightbox-img img{
+
+  max-width:100%;
+
+  max-height:100%;
+
+  object-fit:contain;
+
+}
+
+
+/* =========================
+   その他
+   ========================= */
+
+.reset-link{
+
+  display:block;
+
+  text-align:center;
+
+  color:#6E7480;
+
+  font-size:12px;
+
+  margin-top:28px;
+
+  background:none;
+
+  border:none;
+
+  text-decoration:underline;
+
+  cursor:pointer;
+
+}
+
+
+.toast{
+
+  position:fixed;
+
+  bottom:90px;
+
+  left:50%;
+
+  transform:translateX(-50%);
+
+  background:var(--panel-alt);
+
+  border:1px solid var(--border);
+
+  color:var(--text);
+
+  font-size:12px;
+
+  padding:8px 14px;
+
+  border-radius:var(--radius);
+
+  z-index:70;
+
+  max-width:90%;
+
+  text-align:center;
+
+}
+
+
+.loading-screen{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  height:60vh;
+
+  color:var(--muted);
+
+  font-size:13px;
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div id="app">
+
+  <div class="loading-screen">
+
+    Firebaseに接続しています...
+
+  </div>
+
+</div>
+
+
+<script>
+
+(function(){
+
+"use strict";
+
+
+/* ==================================================
+   Supabase
+   ================================================== */
+
+var supabase = null;
+
+
+function waitForSupabase(){
+
+  return new Promise(function(resolve,reject){
+
+    if(window.supabaseClient){
+
+      supabase =
+        window.supabaseClient;
+
+      resolve();
+
+      return;
+
+    }
+
+
+    var timeout =
+      setTimeout(function(){
+
+        clearInterval(timer);
+
+        reject(
+          new Error(
+            "Supabaseの接続待ちがタイムアウトしました"
+          )
+        );
+
+      },10000);
+
+
+    var timer =
+      setInterval(function(){
+
+        if(window.supabaseClient){
+
+          clearInterval(timer);
+
+          clearTimeout(timeout);
+
+          supabase =
+            window.supabaseClient;
+
+          resolve();
+
+        }
+
+      },50);
+
+  });
+
+}
+
+
+/* ==================================================
+   状態
+   ================================================== */
+
+var state = {
+
+  view:"list",
+
+  loading:true,
+
+  error:null,
+
+  index:[],
+
+  currentId:null,
+
+  currentSite:null,
+
+  showAddModal:false,
+
+  showEditAddr:false,
+
+  lightboxPhotoId:null,
+
+  toast:null,
+
+  savingPhoto:false
+
+};
+
+
+var siteCache = {};
+
+var app =
+  document.getElementById("app");
+
+
+/* ==================================================
+   Firebase待機
+   ================================================== */
+
+function waitForFirebase(){
+
+  return new Promise(function(resolve){
+
+    if(
+      window.firebaseDB &&
+      window.firebaseFns
+    ){
+
+      resolve();
+
+      return;
+
+    }
+
+
+    window.addEventListener(
+      "firebase-ready",
+      function(){
+
+        resolve();
+
+      },
+      {once:true}
+    );
+
+  });
+
+}
+
+
+/* ==================================================
+   ID
+   ================================================== */
+
+function uid(){
+
+  return (
+
+    Date.now().toString(36) +
+
+    Math.random()
+      .toString(36)
+      .slice(2,10)
+
+  );
+
+}
+
+
+/* ==================================================
+   HTMLエスケープ
+   ================================================== */
+
+function escapeHtml(s){
+
+  return String(s || "").replace(
+    /[&<>"']/g,
+    function(c){
+
+      return {
+
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        "\"":"&quot;",
+        "'":"&#39;"
+
+      }[c];
+
+    }
+  );
+
+}
+
+
+/* ==================================================
+   Toast
+   ================================================== */
+
+function showToast(msg){
+
+  state.toast =
+    msg;
+
+  render();
+
+
+  setTimeout(function(){
+
+    state.toast =
+      null;
+
+    render();
+
+  },1800);
+
+}
+
+
+/* ==================================================
+   一覧読み込み
+   ================================================== */
+
+async function loadIndex(){
+
+  state.loading =
+    true;
+
+  render();
+
+
+  try{
+
+    await waitForFirebase();
+
+
+    var db =
+      window.firebaseDB;
+
+    var f =
+      window.firebaseFns;
+
+
+    var q =
+      f.query(
+        f.collection(db,"sites"),
+        f.orderBy("createdAt","desc")
+      );
+
+
+    var snapshot =
+      await f.getDocs(q);
+
+
+    var list = [];
+
+
+    snapshot.forEach(function(d){
+
+      var data =
+        d.data();
+
+
+      list.push({
+
+        id:d.id,
+
+        name:data.name || "",
+
+        address:data.address || "",
+
+        client:data.client || "",
+
+        createdAt:
+          data.createdAt ||
+          Date.now()
+
+      });
+
+    });
+
+
+    state.index =
+      list;
+
+    state.error =
+      null;
+
+
+  }catch(e){
+
+    console.error(
+      "Firebase一覧エラー:",
+      e
+    );
+
+
+    state.index =
+      [];
+
+    state.error =
+      "Firebaseからデータを読み込めませんでした。Firestoreのルールを確認してください。";
+
+  }
+
+
+  state.loading =
+    false;
+
+  render();
+
+}
+
+
+/* ==================================================
+   現場を開く
+   ================================================== */
+
+async function openSite(id){
+
+  state.currentId =
+    id;
+
+  state.view =
+    "detail";
+
+
+  if(siteCache[id]){
+
+    state.currentSite =
+      siteCache[id];
+
+    render();
+
+  }else{
+
+    state.currentSite =
+      null;
+
+    render();
+
+  }
+
+
+  try{
+
+    await waitForFirebase();
+
+
+    var db =
+      window.firebaseDB;
+
+    var f =
+      window.firebaseFns;
+
+
+    var siteRef =
+      f.doc(
+        db,
+        "sites",
+        id
+      );
+
+
+    var siteSnap =
+      await f.getDoc(siteRef);
+
+
+    if(!siteSnap.exists()){
+
+      var meta =
+        state.index.find(
+          function(s){
+
+            return s.id === id;
+
+          }
+        );
+
+
+      state.currentSite =
+        meta || {
+
+          id:id,
+
+          name:"",
+
+          address:"",
+
+          client:"",
+
+          photos:[],
+
+          comments:[]
+
+        };
+
+
+    }else{
+
+      var data =
+        siteSnap.data();
+
+
+      state.currentSite = {
+
+        id:id,
+
+        name:data.name || "",
+
+        address:data.address || "",
+
+        client:data.client || "",
+
+        createdAt:
+          data.createdAt ||
+          Date.now(),
+
+        photos:
+          Array.isArray(data.photos)
+            ? data.photos
+            : [],
+
+        comments:
+          Array.isArray(data.comments)
+            ? data.comments
+            : []
+
+      };
+
+    }
+
+
+    siteCache[id] =
+      state.currentSite;
+
+
+    render();
+
+
+  }catch(e){
+
+    console.error(
+      "現場読み込みエラー:",
+      e
+    );
+
+
+    state.error =
+      "現場データの読み込みに失敗しました。";
+
+    render();
+
+  }
+
+}
+
+
+/* ==================================================
+   一覧へ戻る
+   ================================================== */
+
+function backToList(){
+
+  state.view =
+    "list";
+
+  state.currentId =
+    null;
+
+  state.currentSite =
+    null;
+
+  state.lightboxPhotoId =
+    null;
+
+  render();
+
+}
+
+
+/* ==================================================
+   現場追加
+   ================================================== */
+
+async function addSite(
+  name,
+  address,
+  client
+){
+
+  try{
+
+    await waitForFirebase();
+
+
+    var db =
+      window.firebaseDB;
+
+    var f =
+      window.firebaseFns;
+
+
+    var site = {
+
+      name:name,
+
+      address:address,
+
+      client:client,
+
+      createdAt:Date.now(),
+
+      photos:[],
+
+      comments:[]
+
+    };
+
+
+    var ref =
+      await f.addDoc(
+        f.collection(db,"sites"),
+        site
+      );
+
+
+    state.index.push({
+
+      id:ref.id,
+
+      name:name,
+
+      address:address,
+
+      client:client,
+
+      createdAt:site.createdAt
+
+    });
+
+
+    siteCache[ref.id] = {
+
+      id:ref.id,
+
+      name:name,
+
+      address:address,
+
+      client:client,
+
+      createdAt:site.createdAt,
+
+      photos:[],
+
+      comments:[]
+
+    };
+
+
+    state.showAddModal =
+      false;
+
+
+    render();
+
+
+    openSite(ref.id);
+
+
+  }catch(e){
+
+    console.error(e);
+
+
+    state.error =
+      "現場の保存に失敗しました。";
+
+    render();
+
+  }
+
+}
+
+
+/* ==================================================
+   現場情報更新
+   ================================================== */
+
+async function updateSiteInfo(
+  id,
+  address,
+  client
+){
+
+  try{
+
+    await waitForFirebase();
+
+
+    var db =
+      window.firebaseDB;
+
+    var f =
+      window.firebaseFns;
+
+
+    await f.updateDoc(
+      f.doc(db,"sites",id),
+      {
+        address:address,
+        client:client
+      }
+    );
+
+
+    state.index =
+      state.index.map(
+        function(s){
+
+          if(s.id !== id){
+
+            return s;
+
+          }
+
+
+          return Object.assign(
+            {},
+            s,
+            {
+              address:address,
+              client:client
+            }
+          );
+
+        }
+      );
+
+
+    var updated =
+      Object.assign(
+        {},
+        state.currentSite,
+        {
+          address:address,
+          client:client
+        }
+      );
+
+
+    state.currentSite =
+      updated;
+
+    siteCache[id] =
+      updated;
+
+
+    state.showEditAddr =
+      false;
+
+
+    render();
+
+
+    showToast(
+      "現場情報を更新しました"
+    );
+
+
+  }catch(e){
+
+    console.error(e);
+
+    state.error =
+      "現場情報の更新に失敗しました。";
+
+    render();
+
+  }
+
+}
+
+
+/* ==================================================
+   Supabase写真削除
+   ================================================== */
+
+async function removeSupabasePhotos(
+  photos
+){
+
+  await waitForSupabase();
+
+
+  if(!photos || !photos.length){
+
+    return;
+
+  }
+
+
+  var paths =
+    photos
+      .filter(function(p){
+
+        return p &&
+               p.path;
+
+      })
+      .map(function(p){
+
+        return p.path;
+
+      });
+
+
+  if(!paths.length){
+
+    return;
+
+  }
+
+
+  var result =
+    await supabase
+      .storage
+      .from("photos")
+      .remove(paths);
+
+
+  if(result.error){
+
+    console.error(
+      "Supabase写真削除エラー:",
+      result.error
+    );
+
+  }
+
+}
+
+
+/* ==================================================
+   現場削除
+   ================================================== */
+
+async function deleteSite(id){
+
+  if(!confirm(
+    "この現場を削除しますか？\n現場情報・コメント・写真も削除されます。"
+  )){
+
+    return;
+
+  }
+
+
+  try{
+
+    await waitForFirebase();
+
+
+    var db =
+      window.firebaseDB;
+
+    var f =
+      window.firebaseFns;
+
+
+    var site =
+      state.currentSite;
+
+
+    if(
+      site &&
+      site.photos
+    ){
+
+      await removeSupabasePhotos(
+        site.photos
+      );
+
+    }
+
+
+    await f.deleteDoc(
+      f.doc(
+        db,
+        "sites",
+        id
+      )
+    );
+
+
+    state.index =
+      state.index.filter(
+        function(s){
+
+          return s.id !== id;
+
+        }
+      );
+
+
+    delete siteCache[id];
+
+
+    state.currentId =
+      null;
+
+    state.currentSite =
+      null;
+
+    state.view =
+      "list";
+
+
+    render();
+
+
+    showToast(
+      "現場を削除しました"
+    );
+
+
+  }catch(e){
+
+    console.error(
+      "現場削除エラー:",
+      e
+    );
+
+
+    state.error =
+      "現場の削除に失敗しました。";
+
+    render();
+
+  }
+
+}
+
+
+/* ==================================================
+   画像圧縮
+   ================================================== */
+
+function compressImageBlob(file){
+
+  return new Promise(
+    function(resolve,reject){
+
+      if(!file){
+
+        reject(
+          new Error(
+            "ファイルがありません"
+          )
+        );
+
+        return;
+
+      }
+
+
+      var reader =
+        new FileReader();
+
+
+      reader.onerror =
+        function(){
+
+          reject(
+            new Error(
+              "画像読み込みに失敗しました"
+            )
+          );
+
+        };
+
+
+      reader.onload =
+        function(){
+
+          var img =
+            new Image();
+
+
+          img.onerror =
+            function(){
+
+              reject(
+                new Error(
+                  "画像の読み込みに失敗しました"
+                )
+              );
+
+            };
+
+
+          img.onload =
+            function(){
+
+              var maxDim =
+                1200;
+
+
+              var w =
+                img.naturalWidth ||
+                img.width;
+
+
+              var h =
+                img.naturalHeight ||
+                img.height;
+
+
+              if(!w || !h){
+
+                reject(
+                  new Error(
+                    "画像サイズを取得できませんでした"
+                  )
+                );
+
+                return;
+
+              }
+
+
+              if(
+                w > maxDim ||
+                h > maxDim
+              ){
+
+                if(w >= h){
+
+                  h =
+                    Math.round(
+                      h * maxDim / w
+                    );
+
+                  w =
+                    maxDim;
+
+                }else{
+
+                  w =
+                    Math.round(
+                      w * maxDim / h
+                    );
+
+                  h =
+                    maxDim;
+
+                }
+
+              }
+
+
+              var canvas =
+                document.createElement(
+                  "canvas"
+                );
+
+
+              canvas.width =
+                w;
+
+              canvas.height =
+                h;
+
+
+              var ctx =
+                canvas.getContext(
+                  "2d"
+                );
+
+
+              ctx.drawImage(
+                img,
+                0,
+                0,
+                w,
+                h
+              );
+
+
+              canvas.toBlob(
+                function(blob){
+
+                  if(!blob){
+
+                    reject(
+                      new Error(
+                        "画像圧縮に失敗しました"
+                      )
+                    );
+
+                    return;
+
+                  }
+
+
+                  resolve(blob);
+
+                },
+                "image/jpeg",
+                0.70
+              );
+
+            };
+
+
+          img.src =
+            reader.result;
+
+        };
+
+
+      reader.readAsDataURL(file);
+
+    }
+  );
+
+}
+
+
+/* ==================================================
+   写真追加
+   ================================================== */
+
+async function addPhotos(fileList){
+
+  if(
+    !fileList ||
+    !fileList.length
+  ){
+
+    return;
+
+  }
+
+
+  if(!state.currentSite){
+
+    alert(
+      "現場を開いてから写真を追加してください。"
+    );
+
+    return;
+
+  }
+
+
+  state.savingPhoto =
+    true;
+
+  state.error =
+    null;
+
+  render();
+
+
+  var uploadedPaths =
+    [];
+
+
+  try{
+
+    await waitForFirebase();
+
+    await waitForSupabase();
+
+
+    var db =
+      window.firebaseDB;
+
+    var f =
+      window.firebaseFns;
+
+
+    var siteId =
+      state.currentId;
+
+
+    var newPhotos =
+      (
+        state.currentSite.photos ||
+        []
+      ).slice();
+
+
+    for(
+      var i=0;
+      i<fileList.length;
+      i++
+    ){
+
+      var file =
+        fileList[i];
+
+
+      if(
+        !file.type ||
+        !file.type.startsWith("image/")
+      ){
+
+        continue;
+
+      }
+
+
+      /*
+        画像圧縮
+      */
+
+      var blob =
+        await compressImageBlob(
+          file
+        );
+
+
+      /*
+        写真ID
+      */
+
+      var photoId =
+        uid();
+
+
+      /*
+        Supabase保存先
+      */
+
+      var path =
+        "sites/" +
+        siteId +
+        "/" +
+        photoId +
+        ".jpg";
+
+
+      console.log(
+        "Supabaseアップロード:",
+        path
+      );
+
+
+      /*
+        Supabaseへアップロード
+      */
+
+      var uploadResult =
+        await supabase
+          .storage
+          .from("photos")
+          .upload(
+            path,
+            blob,
+            {
+              contentType:"image/jpeg",
+              cacheControl:"3600",
+              upsert:false
+            }
+          );
+
+
+      if(uploadResult.error){
+
+        console.error(
+          "Supabase upload error:",
+          uploadResult.error
+        );
+
+        throw uploadResult.error;
+
+      }
+
+
+      uploadedPaths.push(
+        path
+      );
+
+
+      /*
+        公開URL
+      */
+
+      var publicResult =
+        supabase
+          .storage
+          .from("photos")
+          .getPublicUrl(
+            path
+          );
+
+
+      if(
+        !publicResult ||
+        !publicResult.data ||
+        !publicResult.data.publicUrl
+      ){
+
+        throw new Error(
+          "Supabaseの公開URL取得に失敗しました"
+        );
+
+      }
+
+
+      var photoUrl =
+        publicResult
+          .data
+          .publicUrl;
+
+
+      console.log(
+        "写真URL:",
+        photoUrl
+      );
+
+
+      /*
+        Firestoreには
+        URLとStorageパスだけ保存
+      */
+
+      newPhotos.push({
+
+        id:photoId,
+
+        url:photoUrl,
+
+        path:path,
+
+        addedAt:Date.now()
+
+      });
+
+    }
+
+
+    /*
+      Firestoreへ保存
+    */
+
+    var ref =
+      f.doc(
+        db,
+        "sites",
+        siteId
+      );
+
+
+    await f.updateDoc(
+      ref,
+      {
+        photos:newPhotos
+      }
+    );
+
+
+    /*
+      ローカル状態更新
+    */
+
+    var updated =
+      Object.assign(
+        {},
+        state.currentSite,
+        {
+          photos:newPhotos
+        }
+      );
+
+
+    state.currentSite =
+      updated;
+
+
+    siteCache[siteId] =
+      updated;
+
+
+    state.savingPhoto =
+      false;
+
+
+    render();
+
+
+    showToast(
+      fileList.length +
+      "枚の写真を追加しました"
+    );
+
+
+  }catch(e){
+
+    console.error(
+      "写真保存エラー:",
+      e
+    );
+
+
+    /*
+      途中までアップロードした
+      写真を削除
+    */
+
+    if(uploadedPaths.length){
+
+      try{
+
+        await supabase
+          .storage
+          .from("photos")
+          .remove(
+            uploadedPaths
+          );
+
+      }catch(cleanupError){
+
+        console.error(
+          "写真後処理エラー:",
+          cleanupError
+        );
+
+      }
+
+    }
+
+
+    state.savingPhoto =
+      false;
+
+
+    state.error =
+      "写真の保存に失敗しました。Supabase Storageの設定を確認してください。";
+
+
+    render();
+
+  }
+
+}
+
+
+/* ==================================================
+   写真削除
+   ================================================== */
+
+async function deletePhoto(
+  photoId
+){
+
+  try{
+
+    await waitForFirebase();
+
+    await waitForSupabase();
+
+
+    var db =
+      window.firebaseDB;
+
+    var f =
+      window.firebaseFns;
+
+
+    var photos =
+      state.currentSite.photos ||
+      [];
+
+
+    var target =
+      photos.find(
+        function(p){
+
+          return p.id === photoId;
+
+        }
+      );
+
+
+    /*
+      Supabaseから削除
+    */
+
+    if(
+      target &&
+      target.path
+    ){
+
+      var removeResult =
+        await supabase
+          .storage
+          .from("photos")
+          .remove([
+            target.path
+          ]);
+
+
+      if(removeResult.error){
+
+        throw removeResult.error;
+
+      }
+
+    }
+
+
+    /*
+      FirestoreからURL情報を削除
+    */
+
+    var newPhotos =
+      photos.filter(
+        function(p){
+
+          return p.id !== photoId;
+
+        }
+      );
+
+
+    await f.updateDoc(
+      f.doc(
+        db,
+        "sites",
+        state.currentId
+      ),
+      {
+        photos:newPhotos
+      }
+    );
+
+
+    state.currentSite =
+      Object.assign(
+        {},
+        state.currentSite,
+        {
+          photos:newPhotos
+        }
+      );
+
+
+    siteCache[
+      state.currentId
+    ] =
+      state.currentSite;
+
+
+    state.lightboxPhotoId =
+      null;
+
+
+    render();
+
+
+    showToast(
+      "写真を削除しました"
+    );
+
+
+  }catch(e){
+
+    console.error(
+      "写真削除エラー:",
+      e
+    );
+
+
+    state.error =
+      "写真の削除に失敗しました。";
+
+    render();
+
+  }
+
+}
+
+
+/* ==================================================
+   コメント追加
+   ================================================== */
+
+async function addComment(text){
+
+  if(
+    !text ||
+    !text.trim()
+  ){
+
+    return;
+
+  }
+
+
+  try{
+
+    await waitForFirebase();
+
+
+    var db =
+      window.firebaseDB;
+
+    var f =
+      window.firebaseFns;
+
+
+    var comment = {
+
+      id:uid(),
+
+      text:text.trim(),
+
+      createdAt:Date.now()
+
+    };
+
+
+    var comments =
+      (
+        state.currentSite.comments ||
+        []
+      ).concat([
+        comment
+      ]);
+
+
+    await f.updateDoc(
+      f.doc(
+        db,
+        "sites",
+        state.currentId
+      ),
+      {
+        comments:comments
+      }
+    );
+
+
+    state.currentSite =
+      Object.assign(
+        {},
+        state.currentSite,
+        {
+          comments:comments
+        }
+      );
+
+
+    siteCache[
+      state.currentId
+    ] =
+      state.currentSite;
+
+
+    render();
+
+
+    showToast(
+      "コメントを追加しました"
+    );
+
+
+  }catch(e){
+
+    console.error(e);
+
+
+    state.error =
+      "コメントの保存に失敗しました。";
+
+    render();
+
+  }
+
+}
+
+
+/* ==================================================
+   コメント削除
+   ================================================== */
+
+async function deleteComment(
+  commentId
+){
+
+  try{
+
+    await waitForFirebase();
+
+
+    var db =
+      window.firebaseDB;
+
+    var f =
+      window.firebaseFns;
+
+
+    var comments =
+      (
+        state.currentSite.comments ||
+        []
+      ).filter(
+        function(c){
+
+          return c.id !== commentId;
+
+        }
+      );
+
+
+    await f.updateDoc(
+      f.doc(
+        db,
+        "sites",
+        state.currentId
+      ),
+      {
+        comments:comments
+      }
+    );
+
+
+    state.currentSite =
+      Object.assign(
+        {},
+        state.currentSite,
+        {
+          comments:comments
+        }
+      );
+
+
+    siteCache[
+      state.currentId
+    ] =
+      state.currentSite;
+
+
+    render();
+
+
+    showToast(
+      "コメントを削除しました"
+    );
+
+
+  }catch(e){
+
+    console.error(e);
+
+
+    state.error =
+      "コメントの削除に失敗しました。";
+
+    render();
+
+  }
+
+}
+
+
+/* ==================================================
+   全削除
+   ================================================== */
+
+async function resetAll(){
+
+  if(!confirm(
+    "すべての現場と写真を削除します。\nこの操作は取り消せません。\n\n本当に削除しますか？"
+  )){
+
+    return;
+
+  }
+
+
+  try{
+
+    await waitForFirebase();
+
+    await waitForSupabase();
+
+
+    var db =
+      window.firebaseDB;
+
+    var f =
+      window.firebaseFns;
+
+
+    var snapshot =
+      await f.getDocs(
+        f.collection(db,"sites")
+      );
+
+
+    /*
+      全写真のパスを取得
+    */
+
+    var allPaths = [];
+
+
+    snapshot.forEach(
+      function(d){
+
+        var data =
+          d.data();
+
+
+        var photos =
+          data.photos || [];
+
+
+        photos.forEach(
+          function(p){
+
+            if(p && p.path){
+
+              allPaths.push(
+                p.path
+              );
+
+            }
+
+          }
+        );
+
+      }
+    );
+
+
+    /*
+      Supabase写真削除
+    */
+
+    if(allPaths.length){
+
+      var result =
+        await supabase
+          .storage
+          .from("photos")
+          .remove(
+            allPaths
+          );
+
+
+      if(result.error){
+
+        console.error(
+          "Storage全削除エラー:",
+          result.error
+        );
+
+      }
+
+    }
+
+
+    /*
+      Firestore削除
+    */
+
+    var promises = [];
+
+
+    snapshot.forEach(
+      function(d){
+
+        promises.push(
+          f.deleteDoc(
+            f.doc(
+              db,
+              "sites",
+              d.id
+            )
+          )
+        );
+
+      }
+    );
+
+
+    await Promise.all(
+      promises
+    );
+
+
+    siteCache =
+      {};
+
+    state.index =
+      [];
+
+    state.currentId =
+      null;
+
+    state.currentSite =
+      null;
+
+    state.view =
+      "list";
+
+
+    render();
+
+
+    showToast(
+      "すべてのデータを削除しました"
+    );
+
+
+  }catch(e){
+
+    console.error(e);
+
+
+    state.error =
+      "データの削除に失敗しました。";
+
+    render();
+
+  }
+
+}
+
+
+/* ==================================================
+   日時
+   ================================================== */
+
+function formatDateTime(ts){
+
+  var d =
+    new Date(ts);
+
+
+  var pad =
+    function(n){
+
+      return n < 10
+        ? "0" + n
+        : "" + n;
+
+    };
+
+
+  return (
+
+    (d.getMonth()+1) +
+    "/" +
+    d.getDate() +
+    " " +
+    pad(d.getHours()) +
+    ":" +
+    pad(d.getMinutes())
+
+  );
+
+}
+
+
+/* ==================================================
+   Googleマップ
+   ================================================== */
+
+function mapUrl(
+  name,
+  address
+){
+
+  var q =
+    address &&
+    address.trim()
+      ? address
+      : name;
+
+
+  return (
+    "https://www.google.com/maps/search/?api=1&query=" +
+    encodeURIComponent(q)
+  );
+
+}
+
+
+/* ==================================================
+   クレーンアイコン
+   ================================================== */
+
+function craneIcon(){
+
+  return (
+
+    '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+
+    '<path d="M3 20h6" stroke="#F0B429" stroke-width="1.6" stroke-linecap="round"/>' +
+
+    '<path d="M6 20V6l12 4" stroke="#F0B429" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+
+    '<path d="M18 10v3" stroke="#F0B429" stroke-width="1.6" stroke-linecap="round"/>' +
+
+    '<circle cx="18" cy="14.4" r="1.4" fill="#F0B429"/>' +
+
+    '</svg>'
+
+  );
+
+}
+
+
+/* ==================================================
+   Render
+   ================================================== */
+
+function render(){
+
+  var html = "";
+
+
+  html +=
+
+    '<header class="top">' +
+
+      '<div class="top-inner">' +
+
+        craneIcon() +
+
+        '<div>' +
+
+          '<h1>ニシオ現場写真台帳</h1>' +
+
+          '<div class="sub">' +
+
+            'Firebaseで全社員共有・現場ごとに地図と写真を記録' +
+
+          '</div>' +
+
+        '</div>' +
+
+      '</div>' +
+
+      '<div class="hazard-bar"></div>' +
+
+    '</header>';
+
+
+  html +=
+    '<main>';
+
+
+  if(state.error){
+
+    html +=
+
+      '<div class="banner">' +
+
+        '<span>' +
+
+          escapeHtml(
+            state.error
+          ) +
+
+        '</span>' +
+
+        '<button data-action="dismiss-error">' +
+
+          '閉じる' +
+
+        '</button>' +
+
+      '</div>';
+
+  }
+
+
+  if(state.loading){
+
+    html +=
+
+      '<div class="loading-screen">' +
+
+        '読み込み中...' +
+
+      '</div>';
+
+
+  }else if(
+    state.view === "list"
+  ){
+
+    html +=
+      renderList();
+
+
+  }else{
+
+    html +=
+      renderDetail();
+
+  }
+
+
+  html +=
+    '</main>';
+
+
+  if(
+    state.view === "list" &&
+    !state.loading
+  ){
+
+    html +=
+
+      '<button class="fab" data-action="open-add">' +
+
+        '+' +
+
+      '</button>';
+
+  }
+
+
+  if(state.showAddModal){
+
+    html +=
+      renderAddModal();
+
+  }
+
+
+  if(state.showEditAddr){
+
+    html +=
+      renderEditAddrModal();
+
+  }
+
+
+  if(state.lightboxPhotoId){
+
+    html +=
+      renderLightbox();
+
+  }
+
+
+  if(state.toast){
+
+    html +=
+
+      '<div class="toast">' +
+
+        escapeHtml(
+          state.toast
+        ) +
+
+      '</div>';
+
+  }
+
+
+  app.innerHTML =
+    html;
+
+
+  bindEvents();
+
+}
+
+
+/* ==================================================
+   一覧表示
+   ================================================== */
+
+function renderList(){
+
+  if(!state.index.length){
+
+    return (
+
+      '<div class="empty-state">' +
+
+        '<p>' +
+
+          'まだ現場が登録されていません。<br>' +
+
+          '右下の「＋」から最初の現場を追加してください。' +
+
+        '</p>' +
+
+      '</div>'
+
+    );
+
+  }
+
+
+  var sorted =
+    state.index
+      .slice()
+      .sort(
+        function(a,b){
+
+          return b.createdAt -
+            a.createdAt;
+
+        }
+      );
+
+
+  var html = "";
+
+
+  sorted.forEach(
+    function(s){
+
+      var d =
+        new Date(
+          s.createdAt
+        );
+
+
+      var dateStr =
+        d.getFullYear() +
+        "/" +
+        (d.getMonth()+1) +
+        "/" +
+        d.getDate();
+
+
+      html +=
+
+        '<div class="site-card" data-action="open-site" data-id="' +
+
+          escapeHtml(s.id) +
+
+        '">' +
+
+          '<div class="name">' +
+
+            escapeHtml(s.name) +
+
+          '</div>' +
+
+
+          (
+            s.address
+
+              ? '<div class="addr">' +
+
+                  escapeHtml(s.address) +
+
+                '</div>'
+
+              : ''
+
+          ) +
+
+
+          (
+            s.client
+
+              ? '<div class="addr">' +
+
+                  '得意先: ' +
+
+                  escapeHtml(s.client) +
+
+                '</div>'
+
+              : ''
+
+          ) +
+
+
+          '<div class="meta">' +
+
+            '登録日: ' +
+
+            dateStr +
+
+          '</div>' +
+
+        '</div>';
+
+    }
+  );
+
+
+  html +=
+
+    '<button class="reset-link" data-action="reset-all">' +
+
+      'すべてのデータを削除' +
+
+    '</button>';
+
+
+  return html;
+
+}
+
+
+/* ==================================================
+   詳細表示
+   ================================================== */
+
+function renderDetail(){
+
+  var site =
+    state.currentSite;
+
+
+  if(!site){
+
+    return (
+
+      '<div class="loading-screen">' +
+
+        '読み込み中...' +
+
+      '</div>'
+
+    );
+
+  }
+
+
+  var html = "";
+
+
+  html +=
+
+    '<div class="back-row">' +
+
+      '<button class="back-btn" data-action="back">' +
+
+        '← 現場一覧に戻る' +
+
+      '</button>' +
+
+    '</div>';
+
+
+  html +=
+
+    '<h2 class="detail-title">' +
+
+      escapeHtml(site.name) +
+
+    '</h2>';
+
+
+  html +=
+
+    '<div class="info-row">' +
+
+      '<span class="label">住所</span>' +
+
+      '<span>' +
+
+        (
+          site.address
+            ? escapeHtml(site.address)
+            : "未登録"
+        ) +
+
+      '</span>' +
+
+    '</div>';
+
+
+  html +=
+
+    '<div class="info-row info-row-last">' +
+
+      '<span class="label">得意先</span>' +
+
+      '<span>' +
+
+        (
+          site.client
+            ? escapeHtml(site.client)
+            : "未登録"
+        ) +
+
+      '</span>' +
+
+      '<button class="edit-link" data-action="edit-addr">' +
+
+        '編集' +
+
+      '</button>' +
+
+    '</div>';
+
+
+  /* =========================
+     Googleマップ
+     ========================= */
+
+  html +=
+
+    '<div class="map-frame">' +
+
+      '<div class="map-placeholder">' +
+
+        '<div>' +
+
+          '<div style="font-size:16px;color:var(--text);margin-bottom:10px;">' +
+
+            '📍 現場位置' +
+
+          '</div>' +
+
+
+          (
+
+            site.address ||
+            site.name
+
+              ?
+
+              '<a class="map-button" href="' +
+
+                mapUrl(
+                  site.name,
+                  site.address
+                ) +
+
+                '" target="_blank" rel="noopener noreferrer">' +
+
+                'Googleマップで開く' +
+
+              '</a>'
+
+              :
+
+              '<span>住所が登録されていません</span>'
+
+          ) +
+
+        '</div>' +
+
+      '</div>' +
+
+    '</div>';
+
+
+  /* =========================
+     コメント
+     ========================= */
+
+  var comments =
+    (site.comments || [])
+      .slice()
+      .sort(
+        function(a,b){
+
+          return b.createdAt -
+            a.createdAt;
+
+        }
+      );
+
+
+  html +=
+
+    '<div class="section-head">' +
+
+      '<h2>コメント</h2>' +
+
+      '<span class="count">' +
+
+        comments.length +
+
+        '件' +
+
+      '</span>' +
+
+    '</div>';
+
+
+  html +=
+
+    '<div class="comment-form">' +
+
+      '<input id="f-comment" type="text" maxlength="300" placeholder="例: 朝礼8時、資材搬入は10時から">' +
+
+      '<button data-action="add-comment">' +
+
+        '追加' +
+
+      '</button>' +
+
+    '</div>';
+
+
+  if(comments.length){
+
+    html +=
+      '<div class="comment-list">';
+
+
+    comments.forEach(
+      function(c){
+
+        html +=
+
+          '<div class="comment-item">' +
+
+            '<div class="body">' +
+
+              '<div class="time">' +
+
+                formatDateTime(
+                  c.createdAt
+                ) +
+
+              '</div>' +
+
+              '<div class="text">' +
+
+                escapeHtml(
+                  c.text
+                ) +
+
+              '</div>' +
+
+            '</div>' +
+
+            '<button class="del-c" data-action="delete-comment" data-cid="' +
+
+              escapeHtml(c.id) +
+
+            '">' +
+
+              '削除' +
+
+            '</button>' +
+
+          '</div>';
+
+      }
+    );
+
+
+    html +=
+      '</div>';
+
+
+  }else{
+
+    html +=
+
+      '<div class="comment-empty" style="color:var(--muted);font-size:12px;margin-bottom:24px;">' +
+
+        'まだコメントがありません。' +
+
+      '</div>';
+
+  }
+
+
+  /* =========================
+     写真
+     ========================= */
+
+  var photos =
+    site.photos || [];
+
+
+  html +=
+
+    '<div class="section-head">' +
+
+      '<h2>写真</h2>' +
+
+      '<span class="count">' +
+
+        photos.length +
+
+        '枚' +
+
+      '</span>' +
+
+    '</div>';
+
+
+  html +=
+    '<div class="photo-grid">';
+
+
+  photos
+    .slice()
+    .reverse()
+    .forEach(
+      function(p){
+
+        var src =
+          p.url ||
+          p.dataUrl ||
+          "";
+
+
+        if(!src){
+
+          return;
+
+        }
+
+
+        html +=
+
+          '<div class="photo-tile" data-action="open-photo" data-pid="' +
+
+            escapeHtml(p.id) +
+
+          '">' +
+
+            '<img src="' +
+
+              escapeHtml(src) +
+
+            '" alt="現場写真">' +
+
+          '</div>';
+
+      }
+    );
+
+
+  /*
+    写真追加ボックス
+  */
+
+  html +=
+
+    '<div class="photo-add-box">' +
+
+      '<div class="plus">＋</div>' +
+
+
+      (
+
+        state.savingPhoto
+
+          ?
+
+          '<div style="font-size:11px;color:var(--muted);">' +
+
+            '保存中...' +
+
+          '</div>'
+
+          :
+
+          '<>' +
+
+            '<button class="photo-add-button camera" data-action="camera-button">' +
+
+              '📷 カメラで撮影' +
+
+            '</button>' +
+
+            '<button class="photo-add-button" data-action="album-button">' +
+
+              '🖼️ アルバムから選択' +
+
+            '</button>' +
+
+          '</>'
+
+      ) +
+
+
+      /*
+        カメラ用
+      */
+
+      '<input id="camera-input" type="file" accept="image/*" capture="environment" multiple>' +
+
+
+      /*
+        アルバム用
+      */
+
+      '<input id="album-input" type="file" accept="image/*" multiple>' +
+
+
+    '</div>';
+
+
+  html +=
+    '</div>';
+
+
+  html +=
+
+    '<button class="reset-link" data-action="delete-site">' +
+
+      'この現場を削除' +
+
+    '</button>';
+
+
+  return html;
+
+}
+
+
+/* ==================================================
+   現場追加モーダル
+   ================================================== */
+
+function renderAddModal(){
+
+  return (
+
+    '<div class="overlay" data-action="overlay-close" data-target="add">' +
+
+      '<div class="modal" onclick="event.stopPropagation()">' +
+
+        '<h2>現場を追加</h2>' +
+
+        '<div class="field">' +
+
+          '<label>現場名</label>' +
+
+          '<input id="f-name" type="text" placeholder="例: ○○ビル新築工事">' +
+
+        '</div>' +
+
+        '<div class="field">' +
+
+          '<label>住所（任意）</label>' +
+
+          '<input id="f-addr" type="text" placeholder="例: 福岡県福岡市博多区...">' +
+
+        '</div>' +
+
+        '<div class="field">' +
+
+          '<label>得意先（任意）</label>' +
+
+          '<input id="f-client" type="text" placeholder="例: ○○建設株式会社">' +
+
+        '</div>' +
+
+        '<div class="modal-actions">' +
+
+          '<button class="btn btn-secondary" data-action="close-add">' +
+
+            'キャンセル' +
+
+          '</button>' +
+
+          '<button class="btn btn-primary" data-action="save-add">' +
+
+            '保存' +
+
+          '</button>' +
+
+        '</div>' +
+
+      '</div>' +
+
+    '</div>'
+
+  );
+
+}
+
+
+/* ==================================================
+   編集モーダル
+   ================================================== */
+
+function renderEditAddrModal(){
+
+  var site =
+    state.currentSite;
+
+
+  return (
+
+    '<div class="overlay" data-action="overlay-close" data-target="edit">' +
+
+      '<div class="modal" onclick="event.stopPropagation()">' +
+
+        '<h2>現場情報を編集</h2>' +
+
+        '<div class="field">' +
+
+          '<label>住所</label>' +
+
+          '<input id="f-edit-addr" type="text" value="' +
+
+            escapeHtml(site.address || "") +
+
+          '">' +
+
+        '</div>' +
+
+        '<div class="field">' +
+
+          '<label>得意先</label>' +
+
+          '<input id="f-edit-client" type="text" value="' +
+
+            escapeHtml(site.client || "") +
+
+          '">' +
+
+        '</div>' +
+
+        '<div class="modal-actions">' +
+
+          '<button class="btn btn-secondary" data-action="close-edit">' +
+
+            'キャンセル' +
+
+          '</button>' +
+
+          '<button class="btn btn-primary" data-action="save-edit">' +
+
+            '保存' +
+
+          '</button>' +
+
+        '</div>' +
+
+      '</div>' +
+
+    '</div>'
+
+  );
+
+}
+
+
+/* ==================================================
+   写真拡大
+   ================================================== */
+
+function renderLightbox(){
+
+  var site =
+    state.currentSite;
+
+
+  var photo =
+    (site.photos || [])
+      .find(
+        function(p){
+
+          return p.id ===
+            state.lightboxPhotoId;
+
+        }
+      );
+
+
+  if(!photo){
+
+    return "";
+
+  }
+
+
+  var src =
+    photo.url ||
+    photo.dataUrl ||
+    "";
+
+
+  return (
+
+    '<div class="lightbox">' +
+
+      '<div class="lightbox-top">' +
+
+        '<button data-action="close-lightbox">' +
+
+          '← 閉じる' +
+
+        '</button>' +
+
+        '<button class="del" data-action="delete-photo" data-pid="' +
+
+          escapeHtml(photo.id) +
+
+        '">' +
+
+          '削除' +
+
+        '</button>' +
+
+      '</div>' +
+
+      '<div class="lightbox-img">' +
+
+        '<img src="' +
+
+          escapeHtml(src) +
+
+        '" alt="現場写真">' +
+
+      '</div>' +
+
+    '</div>'
+
+  );
+
+}
+
+
+/* ==================================================
+   イベント
+   ================================================== */
+
+function bindEvents(){
+
+  /*
+    コメントEnter
+  */
+
+  var commentInput =
+    document.getElementById(
+      "f-comment"
+    );
+
+
+  if(commentInput){
+
+    commentInput.addEventListener(
+      "keydown",
+      function(e){
+
+        if(e.key === "Enter"){
+
+          e.preventDefault();
+
+
+          var value =
+            commentInput.value;
+
+
+          commentInput.value =
+            "";
+
+
+          addComment(value);
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /*
+    カメラ
+  */
+
+  var cameraInput =
+    document.getElementById(
+      "camera-input"
+    );
+
+
+  if(cameraInput){
+
+    cameraInput.addEventListener(
+      "change",
+      function(e){
+
+        addPhotos(
+          e.target.files
+        );
+
+
+        e.target.value =
+          "";
+
+      }
+    );
+
+  }
+
+
+  /*
+    アルバム
+  */
+
+  var albumInput =
+    document.getElementById(
+      "album-input"
+    );
+
+
+  if(albumInput){
+
+    albumInput.addEventListener(
+      "change",
+      function(e){
+
+        addPhotos(
+          e.target.files
+        );
+
+
+        e.target.value =
+          "";
+
+      }
+    );
+
+  }
+
+
+  /*
+    data-action
+  */
+
+  app.querySelectorAll(
+    "[data-action]"
+  )
+  .forEach(
+    function(el){
+
+      var action =
+        el.getAttribute(
+          "data-action"
+        );
+
+
+      el.addEventListener(
+        "click",
+        function(e){
+
+          var act =
+            this.getAttribute(
+              "data-action"
+            );
+
+
+          switch(act){
+
+            case "dismiss-error":
+
+              state.error =
+                null;
+
+              render();
+
+              break;
+
+
+            case "open-add":
+
+              state.showAddModal =
+                true;
+
+              render();
+
+              break;
+
+
+            case "close-add":
+
+              state.showAddModal =
+                false;
+
+              render();
+
+              break;
+
+
+            case "open-site":
+
+              openSite(
+                this.getAttribute(
+                  "data-id"
+                )
+              );
+
+              break;
+
+
+            case "back":
+
+              backToList();
+
+              break;
+
+
+            case "edit-addr":
+
+              state.showEditAddr =
+                true;
+
+              render();
+
+              break;
+
+
+            case "close-edit":
+
+              state.showEditAddr =
+                false;
+
+              render();
+
+              break;
+
+
+            case "camera-button":{
+
+              e.preventDefault();
+
+              var cam =
+                document.getElementById(
+                  "camera-input"
+                );
+
+              if(cam){
+
+                cam.click();
+
+              }
+
+              break;
+
+            }
+
+
+            case "album-button":{
+
+              e.preventDefault();
+
+              var alb =
+                document.getElementById(
+                  "album-input"
+                );
+
+              if(alb){
+
+                alb.click();
+
+              }
+
+              break;
+
+            }
+
+
+            case "open-photo":
+
+              state.lightboxPhotoId =
+                this.getAttribute(
+                  "data-pid"
+                );
+
+              render();
+
+              break;
+
+
+            case "close-lightbox":
+
+              state.lightboxPhotoId =
+                null;
+
+              render();
+
+              break;
+
+
+            case "delete-photo":
+
+              if(confirm(
+                "この写真を削除しますか？"
+              )){
+
+                deletePhoto(
+                  this.getAttribute(
+                    "data-pid"
+                  )
+                );
+
+              }
+
+              break;
+
+
+            case "delete-site":
+
+              deleteSite(
+                state.currentId
+              );
+
+              break;
+
+
+            case "reset-all":
+
+              resetAll();
+
+              break;
+
+
+            case "add-comment":{
+
+              var input =
+                document.getElementById(
+                  "f-comment"
+                );
+
+
+              if(input){
+
+                var value =
+                  input.value;
+
+
+                input.value =
+                  "";
+
+
+                addComment(value);
+
+              }
+
+              break;
+
+            }
+
+
+            case "delete-comment":
+
+              if(confirm(
+                "このコメントを削除しますか？"
+              )){
+
+                deleteComment(
+                  this.getAttribute(
+                    "data-cid"
+                  )
+                );
+
+              }
+
+              break;
+
+
+            case "overlay-close":
+
+              if(
+                this.getAttribute(
+                  "data-target"
+                ) === "add"
+              ){
+
+                state.showAddModal =
+                  false;
+
+              }else{
+
+                state.showEditAddr =
+                  false;
+
+              }
+
+
+              render();
+
+              break;
+
+
+            case "save-add":{
+
+              var nameEl =
+                document.getElementById(
+                  "f-name"
+                );
+
+
+              var addrEl =
+                document.getElementById(
+                  "f-addr"
+                );
+
+
+              var clientEl =
+                document.getElementById(
+                  "f-client"
+                );
+
+
+              var name =
+                nameEl
+                  ? nameEl.value.trim()
+                  : "";
+
+
+              var addr =
+                addrEl
+                  ? addrEl.value.trim()
+                  : "";
+
+
+              var client =
+                clientEl
+                  ? clientEl.value.trim()
+                  : "";
+
+
+              if(!name){
+
+                alert(
+                  "現場名を入力してください"
+                );
+
+                return;
+
+              }
+
+
+              addSite(
+                name,
+                addr,
+                client
+              );
+
+
+              break;
+
+            }
+
+
+            case "save-edit":{
+
+              var addr2El =
+                document.getElementById(
+                  "f-edit-addr"
+                );
+
+
+              var client2El =
+                document.getElementById(
+                  "f-edit-client"
+                );
+
+
+              var addr2 =
+                addr2El
+                  ? addr2El.value.trim()
+                  : "";
+
+
+              var client2 =
+                client2El
+                  ? client2El.value.trim()
+                  : "";
+
+
+              updateSiteInfo(
+                state.currentId,
+                addr2,
+                client2
+              );
+
+
+              break;
+
+            }
+
+          }
+
+        }
+      );
+
+    }
+  );
+
+}
+
+
+/* ==================================================
+   起動
+   ================================================== */
+
+waitForFirebase()
+  .then(
+    function(){
+
+      loadIndex();
+
+    }
+  )
+  .catch(
+    function(e){
+
+      console.error(e);
+
+      state.loading =
+        false;
+
+      state.error =
+        "Firebaseの起動に失敗しました。";
+
+      render();
+
+    }
+  );
+
+
+})();
+
+</script>
+
+</body>
+
+</html>
